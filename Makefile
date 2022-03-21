@@ -35,3 +35,7 @@ format: ## Formats all files
 
 .PHONY: ci
 ci:	lint test ## Lint code then run tests
+
+.PHOMY: debug
+debug:
+	FLASK_APP=run.py FLASK_ENV=development flask run
