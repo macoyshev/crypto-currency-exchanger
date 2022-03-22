@@ -1,4 +1,4 @@
-
+from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
 from sqlalchemy import DECIMAL, Column, Integer, String
 
 from app.database import Base
@@ -13,9 +13,11 @@ class User(Base):
     def __repr__(self):
         return f'<User {self.username}>'
 
-class UserSchema():
 
-
+class UserSchema(SQLAlchemyAutoSchema):
+    class Meta:
+        model = User
+        load_instance = True
 
 
 class CryptoCurrency(Base):
@@ -28,5 +30,8 @@ class CryptoCurrency(Base):
     def __repr__(self):
         return f'<Crypto {self.name} : {self.value}>'
 
-    def as_dict(self):
-        return {c.name: str(getattr(self, c.name)) for c in self.__table__.columns}
+
+class CryptoCurrencySchema(SQLAlchemyAutoSchema):
+    class Meta:
+        model = CryptoCurrency
+        load_instance = True

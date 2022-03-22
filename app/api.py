@@ -12,7 +12,7 @@ api = Blueprint('api', __name__)
 def fetch_users():
     users = UserService.get_all()
 
-    return get_json_from(users)
+    return json.dumps(users)
 
 
 @api.post('/users')
@@ -20,23 +20,21 @@ def create_user():
     name = request.form.get('username')
     new_user = UserService.create(username=name)
 
-    print(new_user)
-
-    return get_json_from(new_user)
+    return new_user
 
 
 @api.get('/crypto-currencies')
 def fetch_crypto_currencies():
     crypto_currencies = CryptoCurrencyService.get_all()
 
-    return json.dumps([crypt.as_dict() for crypt in crypto_currencies])
+    return json.dumps(crypto_currencies)
 
 
-@api.post('/users')
+@api.post('/crypto-currencies')
 def create_crypto_currencies():
     name = request.form.get('name')
     value = request.form.get('value', type=float)
 
     crypt = CryptoCurrencyService.create(name=name, value=value)
 
-    return json.dumps(crypt.as_dict())
+    return json.dumps(crypt)

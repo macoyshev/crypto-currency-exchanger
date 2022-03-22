@@ -1,36 +1,46 @@
 from app.database import Session
-from app.models import CryptoCurrency, User
+from app.models import CryptoCurrency, User, UserSchema, CryptoCurrencySchema
 
 
 class UserService:
     @staticmethod
     def create(username):
         user = User(username=username)
+        user_schema = UserSchema()
 
-        with Session() as session:
-            session.add(user)
-            session.commit()
+        session = Session()
+        session.add(user)
+        session.commit()
 
-        return user
+        return user_schema.dumps(user)
 
     @staticmethod
     def get_all():
-        with Session() as session:
-            return session.query(User).all()
+        session = Session()
+
+        users = session.query(User).all()
+        user_schema = UserSchema()
+
+        return [user_schema.dumps(user) for user in users]
 
 
 class CryptoCurrencyService:
     @staticmethod
     def create(name, value):
-        crypto_currency = CryptoCurrency(name=name, value=value)
+        crypt = CryptoCurrency(name=name, value=value)
+        crypt_scheme = CryptoCurrencySchema()
 
-        with Session() as session:
-            session.add(crypto_currency)
-            session.commit()
+        session = Session()
+        session.add(crypt)
+        session.commit()
 
-            return crypto_currency
+        return crypt_scheme.dumps(crypt)
 
     @staticmethod
     def get_all():
-        with Session() as session:
-            return session.query(CryptoCurrency).all()
+        session = Session()
+
+        crypto_currencies = session.query(CryptoCurrency).all()
+        crypt_scheme = CryptoCurrencySchema()
+
+        return [crypt_scheme.dumps(crypt) for crypt in crypto_currencies]
