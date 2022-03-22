@@ -1,46 +1,44 @@
+from typing import Union, Optional
+
+import simplejson
+
 from app.database import Session
-from app.models import CryptoCurrency, User, UserSchema, CryptoCurrencySchema
+from app.models import CryptoCurrency, CryptoCurrencySchema, User, UserSchema
 
 
 class UserService:
     @staticmethod
-    def create(username):
-        user = User(username=username)
-        user_schema = UserSchema()
+    def create(username: str):
+        with Session() as session:
+            user = User(username=username)
 
-        session = Session()
-        session.add(user)
-        session.commit()
+            session.add(user)
+            session.commit()
+            session.refresh(user)
 
-        return user_schema.dumps(user)
+            return user
 
     @staticmethod
     def get_all():
-        session = Session()
+        with Session() as session:
+            users = session.query(User).all()
 
-        users = session.query(User).all()
-        user_schema = UserSchema()
-
-        return [user_schema.dumps(user) for user in users]
+            return users
 
 
 class CryptoCurrencyService:
     @staticmethod
-    def create(name, value):
-        crypt = CryptoCurrency(name=name, value=value)
-        crypt_scheme = CryptoCurrencySchema()
+    def create(name: str, value: Union[int, float]) -> str:
+        with Session() as session:
+            crypt = CryptoCurrency(name=name, value=value)
+            session.add(crypt)
+            session.commit()
 
-        session = Session()
-        session.add(crypt)
-        session.commit()
-
-        return crypt_scheme.dumps(crypt)
+            return simplejson.dumps(crypt)
 
     @staticmethod
-    def get_all():
-        session = Session()
+    def get_all() -> list[str]:
+        with Session() as session:
+            crypto_currencies = session.query(CryptoCurrency).all()
 
-        crypto_currencies = session.query(CryptoCurrency).all()
-        crypt_scheme = CryptoCurrencySchema()
-
-        return [crypt_scheme.dumps(crypt) for crypt in crypto_currencies]
+            return [CryptoCurrencySchema().dumps(crypt) for crypt in crypto_currencies]

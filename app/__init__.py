@@ -2,10 +2,10 @@ from flask import Flask
 
 from app import models
 from app.database import engine
+from app.api import api
 
 
-def create_app():
-    from app.api import api
+def create_app() -> Flask:
 
     models.Base.metadata.create_all(engine)
 

@@ -1,5 +1,6 @@
 import json
 
+import simplejson
 from flask import Blueprint, request
 
 from app.services import CryptoCurrencyService, UserService
@@ -9,32 +10,38 @@ api = Blueprint('api', __name__)
 
 
 @api.get('/users')
-def fetch_users():
+def fetch_users() -> str:
     users = UserService.get_all()
-
-    return json.dumps(users)
+    return simplejson.dumps(users)
 
 
 @api.post('/users')
-def create_user():
+def create_user() -> str:
     name = request.form.get('username')
-    new_user = UserService.create(username=name)
 
-    return new_user
+    if not name:
+        raise Exception()
+
+    user = UserService.create(username=name)
+
+    return get_json_from(user)
 
 
 @api.get('/crypto-currencies')
-def fetch_crypto_currencies():
+def fetch_crypto_currencies() -> str:
     crypto_currencies = CryptoCurrencyService.get_all()
 
-    return json.dumps(crypto_currencies)
+    return get_json_from(crypto_currencies)
 
 
 @api.post('/crypto-currencies')
-def create_crypto_currencies():
+def create_crypto_currencies() -> str:
     name = request.form.get('name')
     value = request.form.get('value', type=float)
 
+    if not name or not value:
+        raise Exception()
+
     crypt = CryptoCurrencyService.create(name=name, value=value)
 
-    return json.dumps(crypt)
+    return get_json_from(crypt)
