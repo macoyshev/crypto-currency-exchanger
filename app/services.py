@@ -1,10 +1,12 @@
-from app.models import User, CryptoCurrency, db
+from app.models import User, CryptoCurrency
+from app.database import Session
 
 
 class UserService:
     @staticmethod
     def get_all():
-        users = User.query.all()
+        session = Session()
+        users = session.query(User).all()
 
         return users
 
@@ -12,8 +14,10 @@ class UserService:
     def create(name):
         user = User(name=name)
 
-        db.session.add(user)
-        db.session.commit()
+        session = Session()
+        session.add(user)
+        session.commit()
+        session.refresh(user)
 
         return user
 
@@ -23,13 +27,16 @@ class CryptoCurrencyService:
     def create(name: str, value: float):
         crypt = CryptoCurrency(name=name, value=value)
 
-        db.session.add(crypt)
-        db.session.commit()
+        session = Session()
+        session.add(crypt)
+        session.commit()
+        session.refresh(crypt)
 
         return crypt
 
     @staticmethod
     def get_all() -> list[str]:
-        crypt_currencies = CryptoCurrency.query.all()
+        session = Session()
+        crypt_currencies = session.query(CryptoCurrency).all()
 
         return crypt_currencies

@@ -1,5 +1,4 @@
-
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, jsonify, request
 from werkzeug import Response
 
 from app.services import UserService, CryptoCurrencyService
