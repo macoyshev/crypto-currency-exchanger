@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 
-from marshmallow import Schema
 from sqlalchemy import DECIMAL, Column, Integer, String
 
 from app.database import Base
@@ -26,4 +25,3 @@ class CryptoCurrency(Base):
     id: int = Column(Integer, primary_key=True)
     name = Column(String(30), unique=True, nullable=False)
     value = Column(DECIMAL(19, 4), nullable=False)
-
