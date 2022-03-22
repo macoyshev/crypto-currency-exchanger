@@ -1,44 +1,35 @@
-from typing import Union, Optional
-
-import simplejson
-
-from app.database import Session
-from app.models import CryptoCurrency, CryptoCurrencySchema, User, UserSchema
+from app.models import User, CryptoCurrency, db
 
 
 class UserService:
     @staticmethod
-    def create(username: str):
-        with Session() as session:
-            user = User(username=username)
+    def get_all():
+        users = User.query.all()
 
-            session.add(user)
-            session.commit()
-            session.refresh(user)
-
-            return user
+        return users
 
     @staticmethod
-    def get_all():
-        with Session() as session:
-            users = session.query(User).all()
+    def create(name):
+        user = User(name=name)
 
-            return users
+        db.session.add(user)
+        db.session.commit()
+
+        return user
 
 
 class CryptoCurrencyService:
     @staticmethod
-    def create(name: str, value: Union[int, float]) -> str:
-        with Session() as session:
-            crypt = CryptoCurrency(name=name, value=value)
-            session.add(crypt)
-            session.commit()
+    def create(name: str, value: float):
+        crypt = CryptoCurrency(name=name, value=value)
 
-            return simplejson.dumps(crypt)
+        db.session.add(crypt)
+        db.session.commit()
+
+        return crypt
 
     @staticmethod
     def get_all() -> list[str]:
-        with Session() as session:
-            crypto_currencies = session.query(CryptoCurrency).all()
+        crypt_currencies = CryptoCurrency.query.all()
 
-            return [CryptoCurrencySchema().dumps(crypt) for crypt in crypto_currencies]
+        return crypt_currencies

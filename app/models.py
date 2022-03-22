@@ -1,35 +1,23 @@
-from marshmallow import Schema
-from sqlalchemy import DECIMAL, Column, Integer, String
+from dataclasses import dataclass
 
-from app.database import Base
+from flask_sqlalchemy import SQLAlchemy
 
-
-class User(Base):
-    __tablename__ = 'users'
-
-    id = Column(Integer, primary_key=True)
-    username = Column(String(30), unique=True, nullable=False)
-
-    def __repr__(self) -> str:
-        return f'<User {self.username}>'
+db = SQLAlchemy()
 
 
-class UserSchema(Schema):
-    class Meta:
-        fields = ('id', 'username')
+@dataclass
+class User(db.Model):
+    name: str
+    id: int = db.Column(db.Integer, primary_key=True)
+
+    name = db.Column(db.String(50), unique=True, nullable=False)
 
 
-class CryptoCurrency(Base):
-    __tablename__ = 'crypto-currencies'
+@dataclass
+class CryptoCurrency(db.Model):
+    value: float
+    name: str
+    id: int = db.Column(db.Integer, primary_key=True)
 
-    id = Column(Integer, primary_key=True)
-    name = Column(String(30), unique=True, nullable=False)
-    value = Column(DECIMAL(19, 4), nullable=False)
-
-    def __repr__(self) -> str:
-        return f'<Crypto {self.name} : {self.value}>'
-
-
-class CryptoCurrencySchema(Schema):
-    class Meta:
-        fields = ('id', 'name', 'value')
+    name = db.Column(db.String(50), unique=True, nullable=False)
+    value = db.Column(db.DECIMAL(19, 4), nullable=False)
