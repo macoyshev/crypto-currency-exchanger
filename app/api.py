@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, request
 from werkzeug import Response
 
+from app.exceptions import InvalidParams, ZeroWalletBalanceException
 from app.services import CryptoService, UserService
 
 api = Blueprint('api', __name__)
@@ -24,11 +25,42 @@ def create_user() -> str:
     name = request.args.get('name')
 
     if not name:
-        raise Exception()
+        raise InvalidParams()
 
     UserService.create(name=name)
 
     return 'user successfully created'
+
+
+@api.post('/users/<int:user_id>/crypto-currencies')
+def add_user_crypto(user_id: int) -> str:
+    crypto_id = request.args.get('crypto_id', type=int)
+    crypto_count = request.args.get('crypto_count', type=int)
+
+    if not crypto_count or not crypto_id:
+        raise InvalidParams()
+
+    UserService.add_crypto(user_id=user_id, crypto_id=crypto_id, count=crypto_count)
+
+    return 'success'
+
+
+@api.delete('/users/<int:user_id>/crypto-currencies')
+def remove_user_crypto(user_id: int) -> str:
+    crypto_id = request.args.get('crypto_id', type=int)
+    crypto_count = request.args.get('crypto_count', type=int)
+
+    if not crypto_count or not crypto_id:
+        raise InvalidParams()
+
+    try:
+        UserService.remove_crypto(
+            user_id=user_id, crypto_id=crypto_id, count=crypto_count
+        )
+
+        return 'success'
+    except ZeroWalletBalanceException:
+        return 'error, insufficient funds'
 
 
 @api.get('/crypto-currencies')
@@ -38,27 +70,21 @@ def fetch_crypto_currencies() -> Response:
     return jsonify(crypto_currencies)
 
 
+@api.get('/crypto-currencies/<int:crypto_id>')
+def get_crypto(crypto_id: int) -> Response:
+    crypto = CryptoService.get_by_id(crypto_id)
+
+    return jsonify(crypto)
+
+
 @api.post('/crypto-currencies')
 def create_crypt() -> str:
     name = request.args.get('name')
     value = request.args.get('value')
 
     if not name or not value:
-        raise Exception()
+        raise InvalidParams()
 
     CryptoService.create(name=name, value=value)
 
     return 'crypt successfully created'
-
-
-@api.post('/users/<int:user_id>/crypto-currencies')
-def add_user_crypto(user_id: int) -> str:
-    crypto_id = request.args.get('crypto_id', type=int)
-    crypto_count = request.args.get('crypto_count', type=int)
-
-    if not crypto_count or not crypto_id:
-        raise Exception()
-
-    UserService.add_crypto(user_id=user_id, crypto_id=crypto_id, count=crypto_count)
-
-    return 'success'

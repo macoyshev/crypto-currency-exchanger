@@ -1,6 +1,7 @@
 from decimal import Decimal
 
 from app.database import create_session
+from app.exceptions import ZeroWalletBalanceException
 from app.models import Crypto, CryptoCounter, User, Wallet
 
 
@@ -11,6 +12,13 @@ class UserService:
             users = session.query(User).all()
 
         return users
+
+    @staticmethod
+    def get_by_id(user_id: int) -> User:
+        with create_session(expire_on_commit=False) as session:
+            user = session.query(User).where(User.id == user_id).first()
+
+        return user
 
     @staticmethod
     def create(name: str) -> None:
@@ -31,6 +39,7 @@ class UserService:
             if cost.compare(user.wallet.balance) == Decimal(-1):
                 user.wallet.balance -= cost
 
+                # searching for existing crypto in the wallet
                 crypto_counter = None
                 for cr_counter in user.wallet.crypto_currency_counters:
                     if cr_counter.crypto.id == crypto_id:
@@ -43,11 +52,25 @@ class UserService:
                     crypto_counter.count += count
 
     @staticmethod
-    def get_by_id(user_id: int) -> User:
-        with create_session(expire_on_commit=False) as session:
-            user = session.query(User).where(User.id == user_id)
+    def remove_crypto(user_id: int, crypto_id: int, count: int) -> None:
+        with create_session() as session:
+            user = session.query(User).where(User.id == user_id).first()
+            crypto = session.query(Crypto).where(Crypto.id == crypto_id).first()
 
-        return user
+            # searching for existing crypto in the wallet
+            crypto_counter = None
+            for cr_counter in user.wallet.crypto_currency_counters:
+                if cr_counter.crypto.id == crypto_id:
+                    crypto_counter = cr_counter
+
+            if crypto_counter and crypto_counter.count >= count:
+                crypto_counter.count -= count
+                user.wallet.balance += crypto.value * Decimal(count)
+
+                if crypto_counter.count == 0:
+                    session.delete(crypto_counter)
+            else:
+                raise ZeroWalletBalanceException()
 
 
 class CryptoService:
@@ -59,15 +82,14 @@ class CryptoService:
         return crypts
 
     @staticmethod
-    def create(name: str, value: str) -> None:
+    def get_by_id(crypto_id: int) -> Crypto:
+        with create_session(expire_on_commit=False) as session:
+            crypt = session.query(Crypto).filter(Crypto.id == crypto_id).first()
 
+        return crypt
+
+    @staticmethod
+    def create(name: str, value: str) -> None:
         with create_session() as session:
             crypt = Crypto(name=name, value=value)
             session.add(crypt)
-
-    @staticmethod
-    def get_by_id(crypto_id: int) -> Crypto:
-        with create_session() as session:
-            crypt = session.query(Crypto).filter(Crypto.id == crypto_id)
-
-        return crypt
