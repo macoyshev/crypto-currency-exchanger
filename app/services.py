@@ -1,5 +1,5 @@
-from app.models import User, CryptoCurrency
 from app.database import Session
+from app.models import CryptoCurrency, User, Wallet
 
 
 class UserService:
@@ -12,7 +12,9 @@ class UserService:
 
     @staticmethod
     def create(name: str) -> User:
+        wallet = Wallet()
         user = User(name=name)
+        user.wallets.append(wallet)
 
         session = Session()
         session.add(user)
@@ -29,7 +31,6 @@ class CryptoCurrencyService:
         crypt_currencies = session.query(CryptoCurrency).all()
 
         return crypt_currencies
-
 
     @staticmethod
     def create(name: str, value: float) -> CryptoCurrency:
@@ -48,8 +49,9 @@ class CryptoCurrencyService:
         return session.query(CryptoCurrency).filter(CryptoCurrency.id == crypto_id)
 
     @staticmethod
-    def update(crypt: CryptoCurrency):
-        crypt_to_change = CryptoCurrencyService.get_by_id(crypt.id)
+    def update(crypt: CryptoCurrency) -> None:
+        session = Session()
 
-        # TODO: make update query https://docs.sqlalchemy.org/en/14/tutorial/orm_data_manipulation.html
-
+        session.query(CryptoCurrency).filter(CryptoCurrency.id == crypt.id).update(
+            {CryptoCurrency.name: crypt.name}
+        )

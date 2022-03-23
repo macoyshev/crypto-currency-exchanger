@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request
 from werkzeug import Response
 
-from app.services import UserService, CryptoCurrencyService
+from app.services import CryptoCurrencyService, UserService
 
 api = Blueprint('api', __name__)
 
