@@ -41,7 +41,7 @@ def fetch_crypto_currencies() -> Response:
 @api.post('/crypto-currencies')
 def create_crypt() -> str:
     name = request.args.get('name')
-    value = request.args.get('value', type=float)
+    value = request.args.get('value')
 
     if not name or not value:
         raise Exception()

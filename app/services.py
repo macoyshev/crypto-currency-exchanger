@@ -59,7 +59,8 @@ class CryptoService:
         return crypts
 
     @staticmethod
-    def create(name: str, value: float) -> None:
+    def create(name: str, value: str) -> None:
+
         with create_session() as session:
             crypt = Crypto(name=name, value=value)
             session.add(crypt)

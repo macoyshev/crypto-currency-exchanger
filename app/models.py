@@ -12,7 +12,7 @@ class Crypto(Base):
 
     id: int = Column(Integer, primary_key=True)
     name: str = Column(String(30), unique=True, nullable=False)
-    value: Numeric = Column(Numeric(19, 4), nullable=False)
+    value: str = Column(Numeric(19, 4), nullable=False)
 
     crypto_counter_id = Column(Integer, ForeignKey('crypto_counters.id'))
 
@@ -37,7 +37,7 @@ class Wallet(Base):
     __tablename__ = 'wallets'
 
     id: int = Column(Integer, primary_key=True)
-    balance: Numeric = Column(Numeric(19, 4), default=1000)
+    balance: str = Column(Numeric(19, 4), default=1000)
 
     user_id = Column(Integer, ForeignKey('users.id'))
 
