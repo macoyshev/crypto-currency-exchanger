@@ -14,14 +14,15 @@ def fetch_users() -> Response:
 
 
 @api.post('/users')
-def create_user() -> Response:
+def create_user() -> str:
     name = request.form.get('name')
 
     if not name:
         raise Exception()
 
-    user = UserService.create(name=name)
-    return jsonify(user)
+    UserService.create(name=name)
+
+    return 'user successfully created'
 
 
 @api.get('/crypto-currencies')
@@ -32,13 +33,13 @@ def fetch_crypto_currencies() -> Response:
 
 
 @api.post('/crypto-currencies')
-def create_crypt() -> Response:
+def create_crypt() -> str:
     name = request.form.get('name')
     value = request.form.get('value', type=float)
 
     if not name or not value:
         raise Exception()
 
-    crypt = CryptoCurrencyService.create(name=name, value=value)
+    CryptoCurrencyService.create(name=name, value=value)
 
-    return jsonify(crypt)
+    return 'crypt successfully created'
