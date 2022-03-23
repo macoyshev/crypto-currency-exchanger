@@ -1,22 +1,34 @@
 from dataclasses import dataclass
 
-from sqlalchemy import DECIMAL, Column, ForeignKey, Integer, String
+from sqlalchemy import Column, ForeignKey, Integer, Numeric, String
 from sqlalchemy.orm import relationship
 
 from app.database import Base
 
 
 @dataclass()
-class CryptoCurrency(Base):
-    __tablename__ = 'crypto-currencies'
+class Crypto(Base):
+    __tablename__ = 'crypto_currencies'
 
     id: int = Column(Integer, primary_key=True)
     name: str = Column(String(30), unique=True, nullable=False)
-    value: float = Column(DECIMAL(19, 4), nullable=False)
-    wallet_id: int = Column(Integer, ForeignKey('wallets.id'))
+    value: Numeric = Column(Numeric(19, 4), nullable=False)
 
-    wallet = relationship(
-        'Wallet', back_populates='crypts', uselist=False, lazy='subquery'
+    crypto_counter_id = Column(Integer, ForeignKey('crypto_counters.id'))
+
+
+@dataclass
+class CryptoCounter(Base):
+    __tablename__ = 'crypto_counters'
+
+    id: int = Column(Integer, primary_key=True)
+    count: int = Column(Integer, default=0)
+
+    wallet_id = Column(Integer, ForeignKey('wallets.id'))
+    crypto: Crypto = relationship(
+        Crypto,
+        lazy='subquery',
+        uselist=False,
     )
 
 
@@ -25,11 +37,12 @@ class Wallet(Base):
     __tablename__ = 'wallets'
 
     id: int = Column(Integer, primary_key=True)
-    budget: int = Column(Integer, default=1000)
+    balance: Numeric = Column(Numeric(19, 4), default=1000)
 
-    user = relationship('User', back_populates='wallet', uselist=False)
-    crypts: CryptoCurrency = relationship(
-        CryptoCurrency, back_populates='wallet', uselist=True, lazy='subquery'
+    user_id = Column(Integer, ForeignKey('users.id'))
+
+    crypto_currency_counters: CryptoCounter = relationship(
+        CryptoCounter, uselist=True, lazy='subquery'
     )
 
 
@@ -39,8 +52,5 @@ class User(Base):
 
     id: int = Column(Integer, primary_key=True)
     name: str = Column(String(30), unique=True, nullable=False)
-    wallet_id: int = Column(Integer, ForeignKey(Wallet.id), nullable=False)
 
-    wallet: Wallet = relationship(
-        Wallet, back_populates='user', uselist=False, lazy='subquery'
-    )
+    wallet: Wallet = relationship(Wallet, uselist=False, lazy='subquery')
