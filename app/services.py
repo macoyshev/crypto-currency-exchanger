@@ -1,3 +1,4 @@
+import random
 from decimal import Decimal
 
 from app.database import create_session
@@ -93,3 +94,18 @@ class CryptoService:
         with create_session() as session:
             crypt = Crypto(name=name, value=value)
             session.add(crypt)
+
+    @staticmethod
+    def randomly_change_currency() -> None:
+        crypts = CryptoService.get_all()
+
+        crypto = random.choice(crypts)
+        new_val = (
+            Decimal(crypto.value) * Decimal(random.randint(90, 110)) / Decimal(100)
+        )
+
+        with create_session() as session:
+            crypto_to_update = (
+                session.query(Crypto).where(Crypto.id == crypto.id).first()
+            )
+            crypto_to_update.value = new_val
