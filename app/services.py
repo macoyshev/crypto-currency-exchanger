@@ -42,13 +42,13 @@ class UserService:
 
                 # searching for existing crypto in the wallet
                 crypto_counter = None
-                for cr_counter in user.wallet.crypto_currency_counters:
+                for cr_counter in user.wallet.briefcase:
                     if cr_counter.crypto.id == crypto_id:
                         crypto_counter = cr_counter
 
                 if not crypto_counter:
                     crypto_counter = CryptoCounter(crypto=crypto, count=count)
-                    user.wallet.crypto_currency_counters.append(crypto_counter)
+                    user.wallet.briefcase.append(crypto_counter)
                 else:
                     crypto_counter.count += count
 
@@ -60,7 +60,7 @@ class UserService:
 
             # searching for existing crypto in the wallet
             crypto_counter = None
-            for cr_counter in user.wallet.crypto_currency_counters:
+            for cr_counter in user.wallet.briefcase:
                 if cr_counter.crypto.id == crypto_id:
                     crypto_counter = cr_counter
 
