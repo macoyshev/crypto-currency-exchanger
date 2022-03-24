@@ -38,4 +38,8 @@ ci:	lint test ## Lint code then run tests
 
 .PHOMY: debug
 debug:
-	FLASK_APP=run.py FLASK_ENV=development flask run
+	FLASK_APP=run.py FLASK_ENV=development flask run --with-threads
+
+.PHOMY: run
+run:
+	FLASK_APP=run.py FLASK_ENV=production flask run

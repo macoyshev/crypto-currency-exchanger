@@ -1,20 +1,10 @@
-import time
 import threading
-from multiprocessing import Process
 
 from app import create_app
-from app.services import CryptoService
+from app.services import emulate_rialto
 
 
-def emulate_rialto() -> None:
-    while True:
-        time.sleep(10)
-        CryptoService.randomly_change_currency()
+app = create_app()
 
-
-if __name__ == '__main__':
-    rialto = Process(target=emulate_rialto)
-    rialto.daemon = True
-    rialto.start()
-
-    app = create_app('DEBUG')
+th2 = threading.Thread(target=emulate_rialto)
+th2.start()

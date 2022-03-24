@@ -1,5 +1,6 @@
 import random
 import sys
+import time
 from decimal import Decimal
 
 from loguru import logger
@@ -44,13 +45,6 @@ class UserService:
 
     @staticmethod
     def buy_crypto(user_id: int, crypto_id: int, count: int) -> None:
-        """
-
-        :param user_id:
-        :param crypto_id:
-        :param count:
-        :return:
-        """
         with create_session() as session:
             user = session.query(User).where(User.id == user_id).first()
             crypto = session.query(Crypto).where(Crypto.id == crypto_id).first()
@@ -82,7 +76,7 @@ class UserService:
                 TransactionService.record(
                     status='error',
                     wallet_id=user.wallet.id,
-                    description=f'user id:{user_id} has not enough to buy {count} crypto id: {crypto_id}',
+                    description=f'user id:{user_id} failed to buy {count} crypto id: {crypto_id}',
                 )
 
                 raise InsufficientFunds()
@@ -108,7 +102,7 @@ class UserService:
 
                 TransactionService.record(
                     status='Error',
-                    description=f'user id:{user_id} sold  {count} crypto id: {crypto_id}',
+                    description=f'user id:{user_id} sold {count} crypto id: {crypto_id}',
                     wallet_id=user.wallet.id,
                 )
             else:
@@ -166,7 +160,7 @@ class TransactionService:
         return transactions
 
     @staticmethod
-    def record(status: str, description: str, wallet_id: int):
+    def record(status: str, description: str, wallet_id: int) -> None:
         with create_session() as session:
             transaction = Transaction(
                 description=description, status=status, wallet_id=wallet_id
@@ -174,3 +168,9 @@ class TransactionService:
             session.add(transaction)
 
             logger.info(f'transaction: {description}')
+
+
+def emulate_rialto() -> None:
+    while True:
+        time.sleep(10)
+        CryptoService.randomly_change_currency()

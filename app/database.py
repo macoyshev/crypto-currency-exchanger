@@ -26,11 +26,8 @@ def create_session(**kwargs: Any) -> SessionType:
         new_session.close()
 
 
-def create_db(mode: str) -> None:
-    if mode == 'TESTING':
-        engine = create_engine(DATA_BASE_TEST_URL)
-    else:
-        engine = create_engine(DATA_BASE_URL)
+def create_db() -> None:
+    engine = create_engine(DATA_BASE_URL)
 
     Session.configure(bind=engine)
     Base.metadata.create_all(engine)
