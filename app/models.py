@@ -2,9 +2,9 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
-from sqlalchemy.orm import relationship, declarative_base
+from sqlalchemy.orm import relationship
 
-Base = declarative_base()
+from app.database import Base
 
 
 @dataclass

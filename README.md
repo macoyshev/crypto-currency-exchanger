@@ -20,7 +20,7 @@ crypto_id and crypto_count respectively. Also, you can
 create your crypto-currency, make a `post` request
 on `/crypto-currencies` with params name and value of new crypto `/crypto-currencies?name=BitCoin&value=12.12`.
 To see transactions, follow `/transactions`
-
+. `ctrl + C` to exit from the app
 
 ### Create venv:
     make venv
