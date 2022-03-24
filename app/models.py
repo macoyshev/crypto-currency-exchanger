@@ -1,9 +1,10 @@
 from dataclasses import dataclass
+from datetime import datetime
 
-from sqlalchemy import Column, ForeignKey, Integer, Numeric, String
-from sqlalchemy.orm import relationship
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
+from sqlalchemy.orm import relationship, declarative_base
 
-from app.database import Base
+Base = declarative_base()
 
 
 @dataclass
@@ -12,7 +13,7 @@ class Crypto(Base):
 
     id: int = Column(Integer, primary_key=True)
     name: str = Column(String(30), unique=True, nullable=False)
-    value: str = Column(Numeric(19, 4), nullable=False)
+    value: str = Column(String(23), nullable=False)
 
     crypto_counter_id = Column(Integer, ForeignKey('crypto_counters.id'))
 
@@ -39,6 +40,7 @@ class Transaction(Base):
     id: int = Column(Integer, primary_key=True)
     status: str = Column(String(10), nullable=False)
     description: str = Column(String(100), nullable=False)
+    time_created: datetime = Column(DateTime(timezone=True), default=datetime.utcnow())
     wallet_id: int = Column(Integer, ForeignKey('wallets.id'))
 
 
@@ -47,7 +49,7 @@ class Wallet(Base):
     __tablename__ = 'wallets'
 
     id: int = Column(Integer, primary_key=True)
-    balance: str = Column(Numeric(19, 4), default=1000)
+    balance: str = Column(String(23), default=1000)
 
     user_id = Column(Integer, ForeignKey('users.id'))
 

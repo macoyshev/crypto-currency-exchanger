@@ -33,7 +33,7 @@ def create_user() -> str:
 
 
 @api.patch('/users/<int:user_id>/crypto-currencies')
-def add_user_crypto(user_id: int) -> str:
+def buy_user_crypto(user_id: int) -> str:
     crypto_id = request.args.get('crypto_id', type=int)
     crypto_count = request.args.get('crypto_count', type=int)
 

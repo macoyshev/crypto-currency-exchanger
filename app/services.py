@@ -49,10 +49,10 @@ class UserService:
             user = session.query(User).where(User.id == user_id).first()
             crypto = session.query(Crypto).where(Crypto.id == crypto_id).first()
 
-            cost = crypto.value * Decimal(count)
+            cost = Decimal(crypto.value) * Decimal(count)
 
-            if cost.compare(user.wallet.balance) == Decimal(-1):
-                user.wallet.balance -= cost
+            if cost.compare(Decimal(user.wallet.balance)) == Decimal(-1):
+                user.wallet.balance = str(Decimal(user.wallet.balance) - cost)
 
                 # searching for existing crypto in the wallet
                 crypto_counter = None
@@ -69,14 +69,14 @@ class UserService:
                 TransactionService.record(
                     status='success',
                     wallet_id=user.wallet.id,
-                    description=f'user id:{user_id} bought {count} crypto id: {crypto_id}',
+                    description=f'user id:{user_id} bought {count} crypto id:{crypto_id}',
                 )
 
             else:
                 TransactionService.record(
                     status='error',
                     wallet_id=user.wallet.id,
-                    description=f'user id:{user_id} failed to buy {count} crypto id: {crypto_id}',
+                    description=f'user id:{user_id} failed to buy {count} crypto id:{crypto_id}',
                 )
 
                 raise InsufficientFunds()
@@ -95,14 +95,17 @@ class UserService:
 
             if crypto_counter and crypto_counter.count >= count:
                 crypto_counter.count -= count
-                user.wallet.balance += crypto.value * Decimal(count)
+                user.wallet.balance = str(
+                    Decimal(user.wallet.balance)
+                    + Decimal(crypto.value) * Decimal(count)
+                )
 
                 if crypto_counter.count == 0:
                     session.delete(crypto_counter)
 
                 TransactionService.record(
                     status='Error',
-                    description=f'user id:{user_id} sold {count} crypto id: {crypto_id}',
+                    description=f'user id:{user_id} sold {count} crypto id:{crypto_id}',
                     wallet_id=user.wallet.id,
                 )
             else:
@@ -138,7 +141,7 @@ class CryptoService:
 
         if len(crypts) != 0:
             crypto = random.choice(crypts)
-            new_val = (
+            new_val = str(
                 Decimal(crypto.value) * Decimal(random.randint(90, 110)) / Decimal(100)
             )
 
