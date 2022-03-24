@@ -6,5 +6,5 @@ class InvalidParams(RequestException):
     pass
 
 
-class ZeroWalletBalanceException(Exception):
+class InsufficientFunds(Exception):
     pass

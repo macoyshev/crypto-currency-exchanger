@@ -1,8 +1,8 @@
 from flask import Blueprint, jsonify, request
 from werkzeug import Response
 
-from app.exceptions import InvalidParams, ZeroWalletBalanceException
-from app.services import CryptoService, UserService
+from app.exceptions import InsufficientFunds, InvalidParams
+from app.services import CryptoService, TransactionService, UserService
 
 api = Blueprint('api', __name__)
 
@@ -32,7 +32,7 @@ def create_user() -> str:
     return 'user successfully created'
 
 
-@api.post('/users/<int:user_id>/crypto-currencies')
+@api.patch('/users/<int:user_id>/crypto-currencies')
 def add_user_crypto(user_id: int) -> str:
     crypto_id = request.args.get('crypto_id', type=int)
     crypto_count = request.args.get('crypto_count', type=int)
@@ -40,9 +40,11 @@ def add_user_crypto(user_id: int) -> str:
     if not crypto_count or not crypto_id:
         raise InvalidParams()
 
-    UserService.add_crypto(user_id=user_id, crypto_id=crypto_id, count=crypto_count)
-
-    return 'success'
+    try:
+        UserService.buy_crypto(user_id=user_id, crypto_id=crypto_id, count=crypto_count)
+        return 'success'
+    except InsufficientFunds:
+        return 'error, insufficient funds'
 
 
 @api.delete('/users/<int:user_id>/crypto-currencies')
@@ -54,12 +56,12 @@ def remove_user_crypto(user_id: int) -> str:
         raise InvalidParams()
 
     try:
-        UserService.remove_crypto(
+        UserService.sell_crypto(
             user_id=user_id, crypto_id=crypto_id, count=crypto_count
         )
 
         return 'success'
-    except ZeroWalletBalanceException:
+    except InsufficientFunds:
         return 'error, insufficient funds'
 
 
@@ -88,3 +90,10 @@ def create_crypt() -> str:
     CryptoService.create(name=name, value=value)
 
     return 'crypt successfully created'
+
+
+@api.get('/transactions')
+def fetch_transactions() -> Response:
+    transactions = TransactionService.get_all()
+
+    return jsonify(transactions)

@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from decimal import Decimal
 
 from sqlalchemy import Column, ForeignKey, Integer, Numeric, String
 from sqlalchemy.orm import relationship
@@ -7,8 +6,7 @@ from sqlalchemy.orm import relationship
 from app.database import Base
 
 
-
-@dataclass()
+@dataclass
 class Crypto(Base):
     __tablename__ = 'crypto_currencies'
 
@@ -41,8 +39,7 @@ class Transaction(Base):
     id: int = Column(Integer, primary_key=True)
     status: str = Column(String(10), nullable=False)
     description: str = Column(String(100), nullable=False)
-
-    wallet_id = Column(Integer, ForeignKey('wallets.id'))
+    wallet_id: int = Column(Integer, ForeignKey('wallets.id'))
 
 
 @dataclass
@@ -58,9 +55,7 @@ class Wallet(Base):
         CryptoCounter, uselist=True, lazy='subquery'
     )
 
-    transactions: Transaction = relationship(
-        Transaction, uselist=True, lazy='subquery'
-    )
+    transactions: Transaction = relationship(Transaction, uselist=True, lazy='subquery')
 
 
 @dataclass
@@ -71,6 +66,3 @@ class User(Base):
     name: str = Column(String(30), unique=True, nullable=False)
 
     wallet: Wallet = relationship(Wallet, uselist=False, lazy='subquery')
-
-
-

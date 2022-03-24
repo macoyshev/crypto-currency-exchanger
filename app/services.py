@@ -1,9 +1,20 @@
 import random
+import sys
 from decimal import Decimal
 
+from loguru import logger
+
 from app.database import create_session
-from app.exceptions import ZeroWalletBalanceException
-from app.models import Crypto, CryptoCounter, User, Wallet
+from app.exceptions import InsufficientFunds
+from app.models import Crypto, CryptoCounter, Transaction, User, Wallet
+
+logger.remove()
+logger.add(
+    sys.stdout,
+    level='INFO',
+    format='<blue>{time:hh:mm:ss.SS} | {level} | {message}</blue>',
+    colorize=True,
+)
 
 
 class UserService:
@@ -29,8 +40,17 @@ class UserService:
 
             session.add(new_user)
 
+            logger.info(f'{name} was added')
+
     @staticmethod
-    def add_crypto(user_id: int, crypto_id: int, count: int) -> None:
+    def buy_crypto(user_id: int, crypto_id: int, count: int) -> None:
+        """
+
+        :param user_id:
+        :param crypto_id:
+        :param count:
+        :return:
+        """
         with create_session() as session:
             user = session.query(User).where(User.id == user_id).first()
             crypto = session.query(Crypto).where(Crypto.id == crypto_id).first()
@@ -52,8 +72,23 @@ class UserService:
                 else:
                     crypto_counter.count += count
 
+                TransactionService.record(
+                    status='success',
+                    wallet_id=user.wallet.id,
+                    description=f'user id:{user_id} bought {count} crypto id: {crypto_id}',
+                )
+
+            else:
+                TransactionService.record(
+                    status='error',
+                    wallet_id=user.wallet.id,
+                    description=f'user id:{user_id} has not enough to buy {count} crypto id: {crypto_id}',
+                )
+
+                raise InsufficientFunds()
+
     @staticmethod
-    def remove_crypto(user_id: int, crypto_id: int, count: int) -> None:
+    def sell_crypto(user_id: int, crypto_id: int, count: int) -> None:
         with create_session() as session:
             user = session.query(User).where(User.id == user_id).first()
             crypto = session.query(Crypto).where(Crypto.id == crypto_id).first()
@@ -70,8 +105,14 @@ class UserService:
 
                 if crypto_counter.count == 0:
                     session.delete(crypto_counter)
+
+                TransactionService.record(
+                    status='Error',
+                    description=f'user id:{user_id} sold  {count} crypto id: {crypto_id}',
+                    wallet_id=user.wallet.id,
+                )
             else:
-                raise ZeroWalletBalanceException()
+                raise InsufficientFunds()
 
 
 class CryptoService:
@@ -95,17 +136,41 @@ class CryptoService:
             crypt = Crypto(name=name, value=value)
             session.add(crypt)
 
+            logger.info(f'{name} was added')
+
     @staticmethod
     def randomly_change_currency() -> None:
         crypts = CryptoService.get_all()
 
-        crypto = random.choice(crypts)
-        new_val = (
-            Decimal(crypto.value) * Decimal(random.randint(90, 110)) / Decimal(100)
-        )
-
-        with create_session() as session:
-            crypto_to_update = (
-                session.query(Crypto).where(Crypto.id == crypto.id).first()
+        if len(crypts) != 0:
+            crypto = random.choice(crypts)
+            new_val = (
+                Decimal(crypto.value) * Decimal(random.randint(90, 110)) / Decimal(100)
             )
-            crypto_to_update.value = new_val
+
+            with create_session() as session:
+                crypto_to_update = (
+                    session.query(Crypto).where(Crypto.id == crypto.id).first()
+                )
+                crypto_to_update.value = new_val
+
+                logger.info('rialto was updated')
+
+
+class TransactionService:
+    @staticmethod
+    def get_all() -> list[Transaction]:
+        with create_session(expire_on_commit=False) as session:
+            transactions = session.query(Transaction).all()
+
+        return transactions
+
+    @staticmethod
+    def record(status: str, description: str, wallet_id: int):
+        with create_session() as session:
+            transaction = Transaction(
+                description=description, status=status, wallet_id=wallet_id
+            )
+            session.add(transaction)
+
+            logger.info(f'transaction: {description}')
